@@ -24,11 +24,19 @@ resource "aws_networkfirewall_rule_group" "useless_rule" {
   }
 }
 
-resource "aws_networkfirewall_rule_group" "allow_ssm" {
+resource "aws_networkfirewall_rule_group" "allow_domains" {
   capacity = 200
-  name     = "allowSSM"
+  name     = "allowDomains"
   type     = "STATEFUL"
   rule_group {
+    rule_variables {
+      ip_sets {
+        key = "HOME_NET"
+        ip_set {
+          definition = [module.source_vpc.vpc_cidr_block]
+        }
+      }
+    }
     rules_source {
       rules_source_list {
         generated_rules_type = "ALLOWLIST"
@@ -37,64 +45,15 @@ resource "aws_networkfirewall_rule_group" "allow_ssm" {
             "ssm.ap-southeast-1.amazonaws.com",
             "ssmmessages.ap-southeast-1.amazonaws.com",
             "ec2messages.ap-southeast-1.amazonaws.com",
-            ".amazonaws.com"
+            ".amazonaws.com",
+            ".keithrozario.com",
+            ".google.com"
         ]
       }
     }
   }
 }
 
-resource "aws_networkfirewall_rule_group" "deny_keithrozario" {
-  capacity = 200
-  name     = "denykeithRozario"
-  type     = "STATEFUL"
-  rule_group {
-    rules_source {
-      rules_source_list {
-        generated_rules_type = "DENYLIST"
-        target_types         = ["TLS_SNI", "HTTP_HOST"]
-        targets              = [
-            ".keithrozario.com"
-        ]
-      }
-    }
-  }
-}
-
-resource "aws_networkfirewall_rule_group" "allow_keithrozario" {
-  capacity = 200
-  name     = "allowkeithRozario"
-  type     = "STATEFUL"
-  rule_group {
-    rules_source {
-      rules_source_list {
-        generated_rules_type = "ALLOWLIST"
-        target_types         = ["TLS_SNI", "HTTP_HOST"]
-        targets              = [
-            "www.keithrozario.com"
-        ]
-      }
-    }
-  }
-}
-
-resource "aws_networkfirewall_rule_group" "allow_http" {
-  capacity = 100
-  name     = "allowHTTP"
-  type     = "STATEFUL"
-  rule_group {
-    rules_source {
-      rules_source_list {
-        generated_rules_type = "ALLOWLIST"
-        target_types         = ["TLS_SNI", "HTTP_HOST"]
-        targets              = [
-            ".jabil.com",
-            ".amazon.com"
-        ]
-      }
-    }
-  }
-}
 
 resource "aws_networkfirewall_firewall_policy" "this" {
   name = "firewallPolicy"
@@ -107,14 +66,11 @@ resource "aws_networkfirewall_firewall_policy" "this" {
       resource_arn = aws_networkfirewall_rule_group.useless_rule.arn
     }
     stateful_rule_group_reference {
-      resource_arn = aws_networkfirewall_rule_group.allow_keithrozario.arn
+      resource_arn = aws_networkfirewall_rule_group.allow_domains.arn
     }
     stateful_rule_group_reference {
       resource_arn = aws_networkfirewall_rule_group.drop_icmp_cloudflare.arn
     }
-    # stateful_rule_group_reference {
-    #   resource_arn = aws_networkfirewall_rule_group.allow_ssm.arn
-    # }
   }
 }
 
