@@ -17,4 +17,4 @@ functions:
   hello:
     handler: handler.hello
     layers:
-      - arn:aws:lambda:ap-southeast-1:770693421928:layer:Klayers-python38-requests:20
+      - arn:aws:lambda:ap-southeast-1:770693421928:layer:Klayers-python38-requests:26
