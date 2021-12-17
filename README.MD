@@ -18,6 +18,13 @@ With a key difference, we use Lambda in the workload subnet, instead of an EC2 i
     $ cd serverless
     $ sls deploy
 
+## Test FQDN filtering
+
+    $ sls invoke -f hello -d '{"domain":"www.keithrozario.com"}'
+    $ sls invoke -f hello -d '{"domain":"www.facebook.com"}'
+    $ sls invoke -f hello -d '{"domain":"www.google.com"}'
+    $ sls invoke -f hello -d '{"domain":"www.amazon.com"}'
+
 # Deletion
 
     $ cd serverless
